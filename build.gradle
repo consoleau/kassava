@@ -1,0 +1,71 @@
+buildscript {
+    dependencies {
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M3'
+    }
+
+}
+
+plugins {
+    id 'nebula.kotlin' version '1.0.5'
+    id 'nebula.project' version '3.3.0'
+    id 'nebula.release' version '4.1.0'
+    id 'nebula.maven-publish' version '4.9.1'
+    id 'nebula.nebula-bintray' version '3.3.4'
+}
+apply plugin: 'org.junit.platform.gradle.plugin'
+
+group 'au.com.console'
+
+repositories {
+    jcenter()
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+junitPlatform {
+    filters {
+        engines {
+            include 'spek'
+        }
+    }
+}
+
+dependencies {
+    testCompile 'org.jetbrains.spek:spek-api:1.1.0-beta2'
+    testCompile 'com.natpryce:hamkrest:1.2.3.0'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M3'
+    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.0-beta2'
+}
+
+tasks.bintrayUpload.dependsOn tasks.check
+tasks.artifactoryPublish.dependsOn tasks.check
+
+gradle.taskGraph.whenReady { graph ->
+    tasks.bintrayUpload.onlyIf {
+        graph.hasTask(':final') || graph.hasTask(':candidate')
+    }
+    tasks.artifactoryPublish.onlyIf {
+        graph.hasTask(':snapshot') || graph.hasTask(':devSnapshot')
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['nebula']
+    pkg {
+        repo = 'kotlin'
+        userOrg = 'consoleau'
+        name = 'kassava'
+        licenses = ['Apache-2.0']
+        labels = ['kotlin']
+        websiteUrl = "https://github.com/consoleau/${project.name}"
+        issueTrackerUrl = "https://github.com/consoleau/${project.name}/issues"
+        vcsUrl = "https://github.com/consoleau/${project.name}.git"
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = "3.2.1"
+}
