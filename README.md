@@ -5,8 +5,22 @@
 
 This library provides some useful kotlin extension functions for implementing `toString()` and `equals()` without all of the boilerplate.
 
-It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily 
-on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
+The main motivation for this library was for situations where you can't use data classes and are required to implement `toString()`/`equals()`/`hashCode()` by:
+* hand-crafting your own :(
+* using the IDE generated methods :(
+* using Apache Common's [ToStringBuilder](https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/builder/ToStringBuilder.html) and [EqualsBuilder](https://commons.apache.org/proper/commons-lang/apidocs/org/apache/commons/lang3/builder/EqualsBuilder.html)
+  * customizable `toString()` format (can replicate Kotlin's data class format)
+  * `reflectionEquals()` and `reflectionToString()` are super easy, but have [awful performance](https://antoniogoncalves.org/2015/06/30/who-cares-about-tostring-performance/)
+  * normal builders are still easy, but require lots of boilerplate
+* using Guava's [MoreObjects](http://google.github.io/guava/releases/snapshot/api/docs/com/google/common/base/MoreObjects.html)
+  * `toStringBuilder()` performs better than Apache, but still requires the same boilerplate, and the format is different to the data class format (it uses braces instead of parentheses)
+  * there's no equivalent builder for `equals()` (you're meant to use Java's `Objects.equals()` but that's lots of boilerplate)
+  * it's a large library (2MB+) if you're not already using it
+* or...something else!
+
+Kassava provides extension functions that you can use to write your `equals()` and `toString()` methods with no boilerplate (using the `kotlinEquals()` and `kotlinToString()` methods respectively). `hashCode()` is trivial to implement now that Java has `Objects.hash()`, so there wasn't any need for improvement there.
+
+It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
 # Quick Start
 
