@@ -22,6 +22,9 @@ Kassava provides extension functions that you can use to write your `equals()` a
 
 It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
+*Please note:* this is still a proof of concept. While the usage is very readable and maintainable, the next step is to benchmark against the alternatives to see if the solution is
+production-ready.
+
 # Quick Start
 
 ```groovy
@@ -30,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile("au.com.console:kassava:0.1.0-rc.1")
+    compile("au.com.console:kassava:0.1.0-rc.2")
 }
 ```
 
@@ -45,16 +48,19 @@ import java.util.Objects
 
 class Employee(val name: String, val age: Int? = null) {
 
-    // 2. Implement equals() by supplying the list of properties used to test equality
-    override fun equals(other: Any?) = kotlinEquals(
-            other = other,
-            properties = arrayOf(Employee::name, Employee::age)
-    )
+    // 2. Optionally define your properties for equals/toString in a companion object
+    // (Kotlin will generate less KProperty classes, and you won't have array creation for every method call)
+    companion object {
+        private val properties = arrayOf(Employee::name, Employee::age)
+    }
 
-    // 3. Implement toString() by supplying the list of properties to be included
-    override fun toString() = kotlinToString(properties = arrayOf(Employee::name, Employee::age))
+    // 3. Implement equals() by supplying the list of properties used to test equality
+    override fun equals(other: Any?) = kotlinEquals(other = other, properties = properties)
 
-    // 4. Implement hashCode() because you're awesome and know what you're doing ;)
+    // 4. Implement toString() by supplying the list of properties to be included
+    override fun toString() = kotlinToString(properties = properties)
+
+    // 5. Implement hashCode() because you're awesome and know what you're doing ;)
     override fun hashCode() = Objects.hash(name, age)
 }
 ```

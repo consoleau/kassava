@@ -95,16 +95,17 @@ class EqualsSpec : Spek({
 })
 
 /**
- * Simple Person class.
+ * Simple Employee class.
  */
 private class Employee(val name: String, val age: Int? = null) {
 
-    override fun equals(other: Any?) = kotlinEquals(
-            other = other,
-            properties = arrayOf(Employee::name, Employee::age)
-    )
+    companion object {
+        private val properties = arrayOf(Employee::name, Employee::age)
+    }
 
-    override fun toString() = kotlinToString(properties = arrayOf(Employee::name, Employee::age))
+    override fun equals(other: Any?) = kotlinEquals(other = other, properties = properties)
+
+    override fun toString() = kotlinToString(properties = properties)
 
     override fun hashCode() = Objects.hash(name, age)
 }

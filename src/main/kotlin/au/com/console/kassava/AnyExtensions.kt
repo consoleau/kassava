@@ -24,10 +24,7 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out K
         other !is T -> false
         other is SupportsMixedTypeEquality && !other.canEqual(this) -> false
         superEquals != null && !superEquals() -> false
-        else -> properties
-                .asSequence()
-                .map { property -> Objects.equals(property.get(this), property.get(other)) }
-                .all { it }
+        else -> properties.all { Objects.equals(it.get(this), it.get(other)) }
     }
 }
 
@@ -46,14 +43,9 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
     val builder = StringBuilder(32).append(T::class.java.simpleName).append("(")
     var nextSeparator = ""
 
-    properties.mapTo(mutableListOf()) { property ->
-        property.name to property.get(this)
-    }.apply {
-        if (superToString != null) {
-            add("super" to superToString())
-        }
-    }.forEach { pair ->
-        val (property, value) = pair
+    properties.forEach {
+        val property = it.name
+        val value = it.get(this)
         if (!omitNulls || value != null) {
             with(builder) {
                 append(nextSeparator)
@@ -68,6 +60,14 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
                 }
             }
         }
+    }
+
+    if (superToString != null) {
+            with(builder) {
+                append(nextSeparator)
+                append("super=")
+                append(superToString())
+            }
     }
 
     return builder.append(")").toString()
