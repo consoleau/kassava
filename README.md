@@ -38,8 +38,8 @@ dependencies {
 
 ```kotlin
 // 1. Import extension functions
-import com.console.kassava.kotlinEquals
-import com.console.kassava.kotlinToString
+import au.com.console.kassava.kotlinEquals
+import au.com.console.kassava.kotlinToString
 
 import java.util.Objects
 
@@ -85,9 +85,9 @@ Here is an example of it in use (in a typical kotlin sealed class example).
 Note the use of `superEquals` and `superToString` in the subclasses - these are lambdas that allow you to reuse the logic in your parent class.
 
 ```kotlin
-import com.console.kassava.kotlinEquals
-import com.console.kassava.kotlinToString
-import com.console.kassava.SupportsMixedTypeEquality
+import au.com.console.kassava.kotlinEquals
+import au.com.console.kassava.kotlinToString
+import au.com.console.kassava.SupportsMixedTypeEquality
 import java.util.Objects
 
 /**
