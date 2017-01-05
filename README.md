@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/consoleau/kassava.svg?branch=master)](https://travis-ci.org/consoleau/kassava)
 [![License](http://img.shields.io/:license-apache-blue.svg?style=flat-square)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [ ![Download](https://api.bintray.com/packages/consoleau/kotlin/kassava/images/download.svg) ](https://bintray.com/consoleau/kotlin/kassava/_latestVersion)
+[![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
 
 This library provides some useful kotlin extension functions for implementing `toString()` and `equals()` without all of the boilerplate.
 
