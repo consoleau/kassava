@@ -21,7 +21,7 @@ The main motivation for this library was for situations where you can't use data
 
 Kassava provides extension functions that you can use to write your `equals()` and `toString()` methods with no boilerplate (using the `kotlinEquals()` and `kotlinToString()` methods respectively). `hashCode()` is trivial to implement now that Java has `Objects.hash()`, so there wasn't any need for improvement there.
 
-It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
+It's also really tiny (about 6kB), as it doesn't depend on any other libraries (like Apache Commons, or Guava). A special shoutout to Guava is required though, as the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
 **How does it perform?** Check the [benchmark](#benchmarking) results below!
 
