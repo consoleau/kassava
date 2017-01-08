@@ -23,8 +23,7 @@ Kassava provides extension functions that you can use to write your `equals()` a
 
 It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
-*Please note:* this is still a proof of concept. While the usage is very readable and maintainable, the next step is to benchmark against the alternatives to see if the solution is
-production-ready.
+**How does it perform?** Check the [benchmark](#benchmark) results below!
 
 # Quick Start
 
@@ -34,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile("au.com.console:kassava:0.1.0-rc.2")
+    compile("au.com.console:kassava:0.1.0-rc.3")
 }
 ```
 
@@ -156,6 +155,43 @@ private sealed class Animal(val name: String) : SupportsMixedTypeEquality { // i
     }
 }
 ```
+
+# Benchmarking
+
+While Kassava's usage is very readable and maintainable, how does it perform against the alternatives?
+
+A [Kassava JMH benchmark project](https://github.com/consoleau/kassava-benchmarks) was created to test this. You can see the [test class](https://github.com/consoleau/kassava-benchmarks/blob/master/src/main/kotlin/au/com/console/kassava/benchmark/Person.kt) implements all the variations of `toString()` and `equals()`, including:
+* normal implementation (boring old IDE-generated style)
+* `Objects` implementation (same as above, but with Java's `Objects.equals()` and `Objects.toString()`)
+* Apache implementation
+* Apache reflection implementation
+* Guava implementation (for `toString()` only, there's no equivalent for `equals()`
+* Kassava implementation (with reused properties array)
+* Kassava implementation (with new array of properties each time)
+
+The benchmark was run on Travis with 10 warmup iterations, 5 test iterations, 1 fork, and measuring average time in nanoseconds. The raw results of the benchmark are:
+
+```
+Benchmark                                           Mode  Cnt     Score     Error  Units
+EqualsBenchmark.apacheEquals                        avgt    5     5.580 ±   0.685  ns/op
+EqualsBenchmark.apacheReflectionEquals              avgt    5   636.222 ±  55.081  ns/op
+EqualsBenchmark.kassavaEquals                       avgt    5    95.361 ±   8.133  ns/op
+EqualsBenchmark.kassavaEqualsWithArrayCreation      avgt    5    93.441 ±   8.532  ns/op
+EqualsBenchmark.manualEquals                        avgt    5     6.284 ±   0.639  ns/op
+EqualsBenchmark.manualObjectsEquals                 avgt    5     7.455 ±   0.786  ns/op
+ToStringBenchmark.apacheReflectionToString          avgt    5  1617.137 ± 158.595  ns/op
+ToStringBenchmark.apacheToString                    avgt    5  1041.171 ±  95.245  ns/op
+ToStringBenchmark.guavaToString                     avgt    5   373.760 ± 125.820  ns/op
+ToStringBenchmark.kassavaToString                   avgt    5   482.094 ±  58.573  ns/op
+ToStringBenchmark.kassavaToStringWithArrayCreation  avgt    5   457.694 ±  23.156  ns/op
+ToStringBenchmark.manualObjectsToString             avgt    5   153.806 ±   3.161  ns/op
+ToStringBenchmark.manualToString                    avgt    5   116.490 ±   9.772  ns/op
+```
+
+TLDR:
+* Kassava's `equals()` implementation is definitely slower than manual/Apache/Guava (approx 15x slower), but nowhere near as bad as Apache's reflection implementation (approx 100x slower)
+* Kassava's `toString()` implementation is only slightly slower than Guava (and faster than Apache!)
+* Apache's `equals()` implementation is faster than the manual implementation??? (Magic?)
 
 # Contributing to the Project #
 
