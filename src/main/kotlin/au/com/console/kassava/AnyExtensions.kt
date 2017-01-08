@@ -20,7 +20,6 @@ import kotlin.reflect.KProperty1
 inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out KProperty1<T, Any?>>, noinline superEquals: (() -> Boolean)? = null): Boolean {
     return when {
         other === this -> true
-        other == null -> false
         other !is T -> false
         other is SupportsMixedTypeEquality && !other.canEqual(this) -> false
         superEquals != null && !superEquals() -> false
