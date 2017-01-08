@@ -23,7 +23,7 @@ Kassava provides extension functions that you can use to write your `equals()` a
 
 It does not depend on any other libraries (like Apache Commons, or Guava), though the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
-**How does it perform?** Check the [benchmark](#benchmark) results below!
+**How does it perform?** Check the [benchmark](#benchmarking) results below!
 
 # Quick Start
 
