@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile("au.com.console:kassava:0.1.0-rc.3")
+    compile("au.com.console:kassava:1.0.0")
 }
 ```
 
@@ -169,23 +169,23 @@ A [Kassava JMH benchmark project](https://github.com/consoleau/kassava-benchmark
 * Kassava implementation (with reused properties array)
 * Kassava implementation (with new array of properties each time)
 
-The benchmark was run on Travis with 10 warmup iterations, 5 test iterations, 1 fork, and measuring average time in nanoseconds. The raw results of the benchmark are:
+The benchmark (using Kassava 1.0.0) was run on Travis with 10 warmup iterations, 5 test iterations, 1 fork, and measuring average time in nanoseconds. The raw results of the benchmark are:
 
 ```
-Benchmark                                           Mode  Cnt     Score     Error  Units
-EqualsBenchmark.apacheEquals                        avgt    5     5.580 ±   0.685  ns/op
-EqualsBenchmark.apacheReflectionEquals              avgt    5   636.222 ±  55.081  ns/op
-EqualsBenchmark.kassavaEquals                       avgt    5    95.361 ±   8.133  ns/op
-EqualsBenchmark.kassavaEqualsWithArrayCreation      avgt    5    93.441 ±   8.532  ns/op
-EqualsBenchmark.manualEquals                        avgt    5     6.284 ±   0.639  ns/op
-EqualsBenchmark.manualObjectsEquals                 avgt    5     7.455 ±   0.786  ns/op
-ToStringBenchmark.apacheReflectionToString          avgt    5  1617.137 ± 158.595  ns/op
-ToStringBenchmark.apacheToString                    avgt    5  1041.171 ±  95.245  ns/op
-ToStringBenchmark.guavaToString                     avgt    5   373.760 ± 125.820  ns/op
-ToStringBenchmark.kassavaToString                   avgt    5   482.094 ±  58.573  ns/op
-ToStringBenchmark.kassavaToStringWithArrayCreation  avgt    5   457.694 ±  23.156  ns/op
-ToStringBenchmark.manualObjectsToString             avgt    5   153.806 ±   3.161  ns/op
-ToStringBenchmark.manualToString                    avgt    5   116.490 ±   9.772  ns/op
+Benchmark                                           Mode  Cnt     Score    Error  Units
+EqualsBenchmark.apacheEquals                        avgt    5     5.365 ±  2.447  ns/op
+EqualsBenchmark.apacheReflectionEquals              avgt    5   569.729 ±  5.990  ns/op
+EqualsBenchmark.kassavaEquals                       avgt    5    84.647 ±  0.429  ns/op
+EqualsBenchmark.kassavaEqualsWithArrayCreation      avgt    5    87.274 ±  0.520  ns/op
+EqualsBenchmark.manualEquals                        avgt    5     5.665 ±  0.081  ns/op
+EqualsBenchmark.manualObjectsEquals                 avgt    5     6.866 ±  0.042  ns/op
+ToStringBenchmark.apacheReflectionToString          avgt    5  1484.542 ± 28.615  ns/op
+ToStringBenchmark.apacheToString                    avgt    5   922.272 ± 52.431  ns/op
+ToStringBenchmark.guavaToString                     avgt    5   344.156 ±  6.403  ns/op
+ToStringBenchmark.kassavaToString                   avgt    5   416.654 ± 10.255  ns/op
+ToStringBenchmark.kassavaToStringWithArrayCreation  avgt    5   420.433 ±  7.425  ns/op
+ToStringBenchmark.manualObjectsToString             avgt    5   140.707 ±  2.457  ns/op
+ToStringBenchmark.manualToString                    avgt    5   118.061 ±  2.196  ns/op
 ```
 
 TLDR:
