@@ -23,7 +23,15 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out K
         other !is T -> false
         other is SupportsMixedTypeEquality && !other.canEqual(this) -> false
         superEquals != null && !superEquals() -> false
-        else -> properties.all { Objects.equals(it.get(this), it.get(other)) }
+        else -> properties.all {
+            val property = it.get(this)
+            val otherProperty = it.get(other)
+            if (property is Array<*>){
+                Objects.deepEquals(property, otherProperty)
+            } else {
+                Objects.equals(property, otherProperty)
+            }
+        }
     }
 }
 

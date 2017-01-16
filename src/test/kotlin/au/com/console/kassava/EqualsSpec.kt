@@ -92,6 +92,31 @@ class EqualsSpec : Spek({
             }
         }
     }
+
+    given("a company with employees"){
+
+        val company = Company(name = "ACME", employees = arrayOf(Employee(name = "Jim"), Employee(name = "Alice")))
+
+        it("should be equal to a company with the same name and same array of employees"){
+            val otherCompany = Company(name = "ACME", employees = company.employees)
+            assertThat(company, equalTo(otherCompany))
+        }
+
+        it("should be equal to a company with the same name and new array of the same employees (deep equals)"){
+            val otherCompany = Company(name = "ACME", employees = company.employees.copyOf())
+            assertThat(company, equalTo(otherCompany))
+        }
+
+        it("should be equal to a company with the same name and new array of similar employees (deep equals)"){
+            val otherCompany = Company(name = "ACME", employees = arrayOf(Employee(name = "Jim"), Employee(name = "Alice")))
+            assertThat(company, equalTo(otherCompany))
+        }
+
+        it("should not be equal to a company with the same name and slightly different employees"){
+            val otherCompany = Company(name = "ACME", employees = arrayOf(Employee(name = "James"), Employee(name = "Alice")))
+            assertThat(company, !equalTo(otherCompany))
+        }
+    }
 })
 
 /**
@@ -108,6 +133,23 @@ private class Employee(val name: String, val age: Int? = null) {
     override fun toString() = kotlinToString(properties = properties)
 
     override fun hashCode() = Objects.hash(name, age)
+}
+
+/**
+ * Company class - for array field equality.
+ */
+private class Company(val name: String, val employees: Array<Employee>){
+
+    companion object {
+        private val properties = arrayOf(Company::name, Company::employees)
+    }
+
+    override fun equals(other: Any?) = kotlinEquals(other = other, properties = properties)
+
+    override fun toString() = kotlinToString(properties = properties)
+
+    override fun hashCode() = Objects.hash(name, employees)
+
 }
 
 /**
