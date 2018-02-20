@@ -1,16 +1,16 @@
 buildscript {
     dependencies {
-        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0-M3'
+        classpath 'org.junit.platform:junit-platform-gradle-plugin:1.1.0'
     }
 
 }
 
 plugins {
-    id 'nebula.kotlin' version '1.0.5'
-    id 'nebula.project' version '3.3.0'
-    id 'nebula.release' version '4.1.0'
-    id 'nebula.maven-publish' version '4.9.1'
-    id 'nebula.nebula-bintray' version '3.3.4'
+    id 'nebula.kotlin' version '1.2.21'
+    id 'nebula.project' version '3.4.0'
+    id 'nebula.release' version '6.3.0'
+    id 'nebula.maven-publish' version '7.0.1'
+    id 'nebula.nebula-bintray' version '3.5.2'
 }
 apply plugin: 'org.junit.platform.gradle.plugin'
 
@@ -32,10 +32,11 @@ junitPlatform {
 }
 
 dependencies {
-    testCompile 'org.jetbrains.spek:spek-api:1.1.0-beta2'
+    compile 'org.jetbrains.kotlin:kotlin-reflect'
+    testCompile 'org.jetbrains.spek:spek-api:1.1.5'
     testCompile 'com.natpryce:hamkrest:1.2.3.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M3'
-    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.0-beta2'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0'
+    testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.1.5'
 }
 
 tasks.bintrayUpload.dependsOn tasks.check
@@ -67,5 +68,5 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.2.1"
+    gradleVersion = "4.5.1"
 }
