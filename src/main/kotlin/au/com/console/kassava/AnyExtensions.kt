@@ -36,6 +36,20 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out K
 }
 
 /**
+ * Generates the hash code of an object, based on the supplied properties.
+ *
+ * The implementation uses Java's [Objects.hash] method.
+ *
+ * @param properties the list of properties to use in generating a hash code
+ * @param superHashCode lambda for calling super.hashCode() if required
+ * @param T the type of the receiving class
+ */
+fun <T : Any> T.kotlinHashCode(properties: Array<out KProperty1<T, Any?>>, superHashCode: (() -> Int)? = null): Int {
+    val objects = properties.map { it.get(this) }.toTypedArray()
+    return if (superHashCode != null) Objects.hash(*objects, superHashCode()) else Objects.hash(*objects)
+}
+
+/**
  * Generates the String representation of an object, based on the supplied properties.
  *
  * The implementation is based on the implementation provided by Guava's ToStringHelper (https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained).
