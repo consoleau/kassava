@@ -1,6 +1,6 @@
 package au.com.console.kassava
 
-import java.util.*
+import java.util.Objects
 import kotlin.reflect.KProperty1
 
 /**
@@ -13,11 +13,13 @@ import kotlin.reflect.KProperty1
  * Checks the other object for equality with this one, based on the supplied properties.
  *
  * @param other the other object to test for equality with this object
- * @param superEquals lambda for calling super.equals() if required (if used, all classes involved should implement the [SupportsMixedTypeEquality] interface)
  * @param properties the list of properties to use when calculating equality
+ * @param superEquals lambda for calling super.equals() if required (if used, all classes involved should implement the [SupportsMixedTypeEquality] interface)
  * @param T the type of the receiving class
  */
-inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out KProperty1<T, Any?>>, noinline superEquals: (() -> Boolean)? = null): Boolean {
+inline fun <reified T : Any> T.kotlinEquals(other: Any?,
+    properties: Array<out KProperty1<T, Any?>>,
+    noinline superEquals: (() -> Boolean)? = null): Boolean {
     return when {
         other === this -> true
         other !is T -> false
@@ -26,12 +28,36 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out K
         else -> properties.all {
             val property = it.get(this)
             val otherProperty = it.get(other)
-            if (property is Array<*>){
+            if (property is Array<*>) {
                 Objects.deepEquals(property, otherProperty)
             } else {
                 Objects.equals(property, otherProperty)
             }
         }
+    }
+}
+
+/**
+ * Generates the hash of an object, based on the supplied properties.
+ *
+ * @param properties the list of properties to include
+ * @param superHashCode lambda for calling super.hashCode() if required
+ * @param T the type of the receiving class
+ */
+inline fun <reified T : Any> T.kotlinHashCode(properties: Array<out KProperty1<T, Any?>>, noinline superHashCode: (() -> Int)? = null): Int {
+    val values = Array(properties.size) { i ->
+        val property = properties[i].get(this)
+        if (property is Array<*>) {
+            property.contentDeepHashCode()
+        } else {
+            property
+        }
+    }
+
+    return if (superHashCode != null) {
+        Objects.hash(*values, superHashCode())
+    } else {
+        Objects.hash(*values)
     }
 }
 
@@ -45,7 +71,9 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?, properties: Array<out K
  * @param superToString lambda for calling super.toString() if required
  * @param T the type of the receiving class
  */
-inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T, Any?>>, omitNulls: Boolean = false, noinline superToString: (() -> String)? = null): String {
+inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T, Any?>>,
+    omitNulls: Boolean = false,
+    noinline superToString: (() -> String)? = null): String {
 
     val builder = StringBuilder(32).append(T::class.java.simpleName).append("(")
     var nextSeparator = ""
@@ -60,7 +88,7 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
                 append(property)
                 append("=")
                 if (value is Array<*>) {
-                    val arrayString = Arrays.deepToString(arrayOf(value))
+                    val arrayString = arrayOf(value).contentDeepToString()
                     append(arrayString, 1, arrayString.length - 1)
                 } else {
                     append(value)
@@ -70,11 +98,11 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
     }
 
     if (superToString != null) {
-            with(builder) {
-                append(nextSeparator)
-                append("super=")
-                append(superToString())
-            }
+        with(builder) {
+            append(nextSeparator)
+            append("super=")
+            append(superToString())
+        }
     }
 
     return builder.append(")").toString()

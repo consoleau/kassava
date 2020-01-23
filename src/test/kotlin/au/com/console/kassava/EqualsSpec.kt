@@ -1,13 +1,15 @@
 package au.com.console.kassava
 
+import au.com.console.kassava.model.ColouredPoint
+import au.com.console.kassava.model.Company
+import au.com.console.kassava.model.Employee
+import au.com.console.kassava.model.Point
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.hasElement
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
-import java.util.*
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import java.util.HashSet
 
 /**
  * Specification for the [kotlinEquals] extension method.
@@ -19,40 +21,40 @@ import java.util.*
  */
 class EqualsSpec : Spek({
 
-    given("a person"){
+    describe("a person") {
 
         val person = Employee(name = "Jim", age = 31)
 
-        it("should be equal to the same person object"){
+        it("should be equal to the same person object") {
             assertThat(person, equalTo(person))
         }
 
-        it("should not be equal to null"){
+        it("should not be equal to null") {
             assertThat(person, !equalTo<Employee>(null))
         }
 
-        it("should not be equal to another type"){
+        it("should not be equal to another type") {
             assertThat(person, !equalTo<Any>("person"))
         }
 
-        it("should be equal to a person with same name and age"){
+        it("should be equal to a person with same name and age") {
             assertThat(person, equalTo(Employee(name = "Jim", age = 31)))
         }
 
-        it("should not be equal to a person with different name"){
+        it("should not be equal to a person with different name") {
             assertThat(person, !equalTo(Employee(name = "Jill", age = 31)))
         }
 
-        it("should not be equal to a person with different age"){
+        it("should not be equal to a person with different age") {
             assertThat(person, !equalTo(Employee(name = "Jim", age = 42)))
         }
 
-        it("should not be equal to a person with null age"){
+        it("should not be equal to a person with null age") {
             assertThat(person, !equalTo(Employee(name = "Jim")))
         }
     }
 
-    given("a point, coloured point and anonymous point") {
+    describe("a point, coloured point and anonymous point") {
 
         val point = Point(x = 1, y = 2)
         val colouredPoint = ColouredPoint(1, 2, "INDIGO")
@@ -60,7 +62,7 @@ class EqualsSpec : Spek({
             override val y = 2
         }
 
-        on("adding the point to a hash set") {
+        describe("adding the point to a hash set") {
             val set = HashSet<Point>()
             set.add(point)
 
@@ -71,21 +73,21 @@ class EqualsSpec : Spek({
             }
         }
 
-        on("comparing the point to the coloured point"){
+        describe("comparing the point to the coloured point") {
             it("should be false") {
                 assertThat(point, !equalTo<Point>(colouredPoint))
                 assertThat(colouredPoint, !equalTo(point))
             }
         }
 
-        on("comparing the point to the anonymous point"){
+        describe("comparing the point to the anonymous point") {
             it("should be true - because anonymous point doesn't override canEqual()") {
                 assertThat(point, equalTo<Point>(anonymousPoint))
                 assertThat(anonymousPoint, equalTo(point))
             }
         }
 
-        on("comparing the coloured point to the anonymous point"){
+        describe("comparing the coloured point to the anonymous point") {
             it("should be false") {
                 assertThat(colouredPoint, !equalTo<Point>(anonymousPoint))
                 assertThat(anonymousPoint, !equalTo<Point>(colouredPoint))
@@ -93,101 +95,29 @@ class EqualsSpec : Spek({
         }
     }
 
-    given("a company with employees"){
+    describe("a company with employees") {
 
         val company = Company(name = "ACME", employees = arrayOf(Employee(name = "Jim"), Employee(name = "Alice")))
 
-        it("should be equal to a company with the same name and same array of employees"){
+        it("should be equal to a company with the same name and same array of employees") {
             val otherCompany = Company(name = "ACME", employees = company.employees)
             assertThat(company, equalTo(otherCompany))
         }
 
-        it("should be equal to a company with the same name and new array of the same employees (deep equals)"){
+        it("should be equal to a company with the same name and new array of the same employees (deep equals)") {
             val otherCompany = Company(name = "ACME", employees = company.employees.copyOf())
             assertThat(company, equalTo(otherCompany))
         }
 
-        it("should be equal to a company with the same name and new array of similar employees (deep equals)"){
+        it("should be equal to a company with the same name and new array of similar employees (deep equals)") {
             val otherCompany = Company(name = "ACME", employees = arrayOf(Employee(name = "Jim"), Employee(name = "Alice")))
             assertThat(company, equalTo(otherCompany))
         }
 
-        it("should not be equal to a company with the same name and slightly different employees"){
+        it("should not be equal to a company with the same name and slightly different employees") {
             val otherCompany = Company(name = "ACME", employees = arrayOf(Employee(name = "James"), Employee(name = "Alice")))
             assertThat(company, !equalTo(otherCompany))
         }
     }
 })
-
-/**
- * Simple Employee class.
- */
-private class Employee(val name: String, val age: Int? = null) {
-
-    companion object {
-        private val properties = arrayOf(Employee::name, Employee::age)
-    }
-
-    override fun equals(other: Any?) = kotlinEquals(other = other, properties = properties)
-
-    override fun toString() = kotlinToString(properties = properties)
-
-    override fun hashCode() = Objects.hash(name, age)
-}
-
-/**
- * Company class - for array field equality.
- */
-private class Company(val name: String, val employees: Array<Employee>){
-
-    companion object {
-        private val properties = arrayOf(Company::name, Company::employees)
-    }
-
-    override fun equals(other: Any?) = kotlinEquals(other = other, properties = properties)
-
-    override fun toString() = kotlinToString(properties = properties)
-
-    override fun hashCode() = Objects.hash(name, employees)
-
-}
-
-/**
- * Point base class that supports mixed type equality (subclasses must override
- * the canEqual() method if they add any fields in order to preserve the equals contract).
- */
-private open class Point(open val x: Int, open val y: Int) : SupportsMixedTypeEquality {
-
-    override fun equals(other: Any?) = kotlinEquals(
-            other = other,
-            properties = arrayOf(Point::x, Point::y)
-    )
-
-    override fun toString() = kotlinToString(properties = arrayOf(Point::x, Point::y))
-
-    override fun hashCode() = Objects.hash(x, y)
-
-    override fun canEqual(other: Any?) = other is Point
-}
-
-/**
- * ColouredPoint subclass that overrides canEqual().
- */
-private class ColouredPoint(x: Int, y: Int, val colour: String) : Point(x, y) {
-
-    override fun equals(other: Any?) = kotlinEquals(
-            other = other,
-            properties = arrayOf(ColouredPoint::colour),
-            superEquals = { super.equals(other) }
-    )
-
-    override fun toString() = kotlinToString(
-            properties = arrayOf(ColouredPoint::colour),
-            superToString = { super.toString() }
-    )
-
-    override fun hashCode() = Objects.hash(colour, super.hashCode())
-
-    override fun canEqual(other: Any?) = other is ColouredPoint
-}
 

@@ -4,7 +4,7 @@
 [ ![Download](https://api.bintray.com/packages/consoleau/kotlin/kassava/images/download.svg) ](https://bintray.com/consoleau/kotlin/kassava/_latestVersion)
 [![Awesome Kotlin Badge](https://kotlin.link/awesome-kotlin.svg)](https://github.com/KotlinBy/awesome-kotlin)
 
-This library provides some useful kotlin extension functions for implementing `toString()` and `equals()` without all of the boilerplate.
+This library provides some useful kotlin extension functions for implementing `toString()`, `equals()` and `hashCode()` without all of the boilerplate.
 
 The main motivation for this library was for situations where you can't use data classes and are required to implement `toString()`/`equals()`/`hashCode()` by:
 * hand-crafting your own :(
@@ -19,7 +19,7 @@ The main motivation for this library was for situations where you can't use data
   * it's a large library (2MB+) if you're not already using it
 * or...something else!
 
-Kassava provides extension functions that you can use to write your `equals()` and `toString()` methods with no boilerplate (using the `kotlinEquals()` and `kotlinToString()` methods respectively). `hashCode()` is trivial to implement now that Java has `Objects.hash()`, so there wasn't any need for improvement there.
+Kassava provides extension functions that you can use to write your `equals()`, `toString()` and `hashCode()` methods with no boilerplate (using the `kotlinEquals()`, `kotlinToString()` and `kotlinHashCode()` methods respectively).
 
 It's also really tiny (about 6kB), as it doesn't depend on any other libraries (like Apache Commons, or Guava). A special shoutout to Guava is required though, as the implementation of `kotlinToString()` is based heavily on the logic in [Guava's](https://github.com/google/guava/wiki/CommonObjectUtilitiesExplained) excellent `ToStringHelper`.
 
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile("au.com.console:kassava:1.0.0")
+    compile("au.com.console:kassava:2.1.0")
 }
 ```
 
@@ -42,6 +42,7 @@ dependencies {
 ```kotlin
 // 1. Import extension functions
 import au.com.console.kassava.kotlinEquals
+import au.com.console.kassava.kotlinHashCode
 import au.com.console.kassava.kotlinToString
 
 import java.util.Objects
@@ -60,8 +61,8 @@ class Employee(val name: String, val age: Int? = null) {
     // 4. Implement toString() by supplying the list of properties to be included
     override fun toString() = kotlinToString(properties = properties)
 
-    // 5. Implement hashCode() because you're awesome and know what you're doing ;)
-    override fun hashCode() = Objects.hash(name, age)
+    // 5. Implement hashCode() by supplying the list of properties to be included
+    override fun hashCode() = kotlinHashCode(properties = properties)
 }
 ```
 
@@ -88,70 +89,85 @@ classes that extend in trivial ways - with no extra fields - can still be consid
     
 Here is an example of it in use (in a typical kotlin sealed class example). 
 
-Note the use of `superEquals` and `superToString` in the subclasses - these are lambdas that allow you to reuse the logic in your parent class.
+Note the use of `superEquals`, `superHashCode` and `superToString` in the subclasses - these are lambdas that allow you to reuse the logic in your parent class.
 
 ```kotlin
 import au.com.console.kassava.kotlinEquals
+import au.com.console.kassava.kotlinHashCode
 import au.com.console.kassava.kotlinToString
 import au.com.console.kassava.SupportsMixedTypeEquality
-import java.util.Objects
 
 /**
  * Animal base class with Cat/Dog subclasses.
  */
-private sealed class Animal(val name: String) : SupportsMixedTypeEquality { // implements interface!
+sealed class Animal(val name: String) : SupportsMixedTypeEquality {
 
     override fun equals(other: Any?) = kotlinEquals(
-            other = other,
-            properties = arrayOf(Animal::name)
+        other = other,
+        properties = properties
     )
 
     // only Animals can be compared to Animals
     override fun canEqual(other: Any?) = other is Animal
 
-    override fun toString() = kotlinToString(properties = arrayOf(Animal::name))
+    override fun toString() = kotlinToString(properties = properties)
 
-    override fun hashCode() = Objects.hash(name)
+    override fun hashCode() = kotlinHashCode(properties = properties)
 
+    companion object {
+        private val properties = arrayOf(Animal::name)
+    }
 
-    class Cat(name: String, val mice: Int) : Animal(name = name){
-
+    class Cat(name: String, val mice: Int) : Animal(name = name) {
+        
         override fun equals(other: Any?) = kotlinEquals(
-                other = other,
-                properties = arrayOf(Cat::mice),
-                superEquals = { super.equals(other) }
+            other = other,
+            properties = properties,
+            superEquals = { super.equals(other) }
         )
 
         // only Cats can be compared to Cats
         override fun canEqual(other: Any?) = other is Cat
 
         override fun toString() = kotlinToString(
-                properties = arrayOf(Cat::mice),
-                superToString = { super.toString() }
+            properties = properties,
+            superToString = { super.toString() }
         )
 
-        override fun hashCode() = Objects.hash(mice, super.hashCode())
+        override fun hashCode() = kotlinHashCode(
+            properties = properties,
+            superHashCode = { super.hashCode() }
+        )
+
+        companion object {
+            private val properties = arrayOf(Cat::mice)
+        }
     }
 
-
-    class Dog(name: String, val bones: Int) : Animal(name = name){
+    class Dog(name: String, val bones: Int, val balls: Int? = null) : Animal(name = name) {
 
         override fun equals(other: Any?) = kotlinEquals(
-                other = other,
-                properties = arrayOf(Dog::bones),
-                superEquals = { super.equals(other) }
+            other = other,
+            properties = properties,
+            superEquals = { super.equals(other) }
         )
 
         // only Dogs can be compared to Dogs
         override fun canEqual(other: Any?) = other is Dog
 
         override fun toString() = kotlinToString(
-                properties = arrayOf(Dog::bones),
-                superToString = { super.toString() }
+            properties = properties,
+            superToString = { super.toString() }
         )
 
-        override fun hashCode() = Objects.hash(bones, super.hashCode())
+        override fun hashCode() = kotlinHashCode(
+            properties = properties,
+            superHashCode = { super.hashCode() }
+        )
 
+        companion object {
+            private val properties = arrayOf(Dog::bones, Dog::balls)
+        }
     }
 }
 ```
