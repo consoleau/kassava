@@ -45,21 +45,23 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?,
  * @param T the type of the receiving class
  */
 inline fun <reified T : Any> T.kotlinHashCode(properties: Array<out KProperty1<T, Any?>>, noinline superHashCode: (() -> Int)? = null): Int {
-    val values = Array(properties.size) { i ->
-        val property = properties[i].get(this)
-        if (property is Array<*>) {
-            property.contentDeepHashCode()
-        } else {
-            property
+    var result = 1
+    for (property in properties) {
+        val value = property.get(this)
+        val hash = when (value) {
+            null -> 0
+            is Array<*> -> value.contentDeepHashCode()
+            else -> value.hashCode()
         }
+        result = 31 * result + hash
     }
 
-    return if (superHashCode != null) {
-        Objects.hash(*values, superHashCode())
-    } else {
-        Objects.hash(*values)
+    if (superHashCode != null) {
+        result = 31 * result + superHashCode()
     }
+    return result
 }
+
 
 /**
  * Generates the String representation of an object, based on the supplied properties.
