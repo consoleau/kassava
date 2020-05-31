@@ -77,34 +77,26 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
     omitNulls: Boolean = false,
     noinline superToString: (() -> String)? = null): String {
 
-    val builder = StringBuilder(32).append(T::class.java.simpleName).append("(")
-    var nextSeparator = ""
+    val builder = StringBuilder(128).append(T::class.java.simpleName).append("(")
 
-    properties.forEach {
-        val property = it.name
-        val value = it.get(this)
-        if (!omitNulls || value != null) {
-            with(builder) {
-                append(nextSeparator)
-                nextSeparator = ", "
-                append(property)
-                append("=")
-                if (value is Array<*>) {
-                    val arrayString = arrayOf(value).contentDeepToString()
-                    append(arrayString, 1, arrayString.length - 1)
-                } else {
-                    append(value)
-                }
-            }
+    for (property in properties) {
+        val value = property.get(this)
+        if (omitNulls && value == null) continue
+
+        builder.append(property.name).append("=")
+        if (value is Array<*>) {
+            val arrayAsString = value.contentDeepToString()
+            builder.append(arrayAsString)
+        } else {
+            builder.append(value)
         }
+        builder.append(", ")
     }
 
-    if (superToString != null) {
-        with(builder) {
-            append(nextSeparator)
-            append("super=")
-            append(superToString())
-        }
+    if (superToString == null) {
+        builder.setLength(builder.length - 2) // Nothing more to add so remove the last ", " (2 is the separator length)
+    } else {
+        builder.append("super=").append(superToString())
     }
 
     return builder.append(")").toString()
