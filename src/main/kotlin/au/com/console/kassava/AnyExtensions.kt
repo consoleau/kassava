@@ -25,14 +25,18 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?,
         other !is T -> false
         other is SupportsMixedTypeEquality && !other.canEqual(this) -> false
         superEquals != null && !superEquals() -> false
-        else -> properties.all {
-            val property = it.get(this)
-            val otherProperty = it.get(other)
-            if (property is Array<*>) {
-                Objects.deepEquals(property, otherProperty)
-            } else {
-                Objects.equals(property, otherProperty)
+        else -> {
+            for (property in properties) {
+                val value = property.get(this)
+                val otherValue = property.get(other)
+                val areEquals = if (value is Array<*>) {
+                    Objects.deepEquals(value, otherValue)
+                } else {
+                    value === otherValue || (value != null && value == otherValue)
+                }
+                if (!areEquals) return false
             }
+            true
         }
     }
 }
@@ -45,21 +49,23 @@ inline fun <reified T : Any> T.kotlinEquals(other: Any?,
  * @param T the type of the receiving class
  */
 inline fun <reified T : Any> T.kotlinHashCode(properties: Array<out KProperty1<T, Any?>>, noinline superHashCode: (() -> Int)? = null): Int {
-    val values = Array(properties.size) { i ->
-        val property = properties[i].get(this)
-        if (property is Array<*>) {
-            property.contentDeepHashCode()
-        } else {
-            property
+    var result = 1
+    for (property in properties) {
+        val value = property.get(this)
+        val hash = when (value) {
+            null -> 0
+            is Array<*> -> value.contentDeepHashCode()
+            else -> value.hashCode()
         }
+        result = 31 * result + hash
     }
 
-    return if (superHashCode != null) {
-        Objects.hash(*values, superHashCode())
-    } else {
-        Objects.hash(*values)
+    if (superHashCode != null) {
+        result = 31 * result + superHashCode()
     }
+    return result
 }
+
 
 /**
  * Generates the String representation of an object, based on the supplied properties.
@@ -75,34 +81,26 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
     omitNulls: Boolean = false,
     noinline superToString: (() -> String)? = null): String {
 
-    val builder = StringBuilder(32).append(T::class.java.simpleName).append("(")
-    var nextSeparator = ""
+    val builder = StringBuilder(128).append(T::class.java.simpleName).append("(")
 
-    properties.forEach {
-        val property = it.name
-        val value = it.get(this)
-        if (!omitNulls || value != null) {
-            with(builder) {
-                append(nextSeparator)
-                nextSeparator = ", "
-                append(property)
-                append("=")
-                if (value is Array<*>) {
-                    val arrayString = arrayOf(value).contentDeepToString()
-                    append(arrayString, 1, arrayString.length - 1)
-                } else {
-                    append(value)
-                }
-            }
+    for (property in properties) {
+        val value = property.get(this)
+        if (omitNulls && value == null) continue
+
+        builder.append(property.name).append("=")
+        if (value is Array<*>) {
+            val arrayAsString = value.contentDeepToString()
+            builder.append(arrayAsString)
+        } else {
+            builder.append(value)
         }
+        builder.append(", ")
     }
 
-    if (superToString != null) {
-        with(builder) {
-            append(nextSeparator)
-            append("super=")
-            append(superToString())
-        }
+    if (superToString == null) {
+        builder.setLength(builder.length - 2) // Nothing more to add so remove the last ", " (2 is the separator length)
+    } else {
+        builder.append("super=").append(superToString())
     }
 
     return builder.append(")").toString()
