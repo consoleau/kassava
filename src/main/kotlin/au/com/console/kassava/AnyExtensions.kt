@@ -75,7 +75,7 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
     omitNulls: Boolean = false,
     noinline superToString: (() -> String)? = null): String {
 
-    val builder = StringBuilder(32).append(T::class.java.simpleName).append("(")
+    val builder = StringBuilder(32).append(T::class.java.simpleName).append('(')
     var nextSeparator = ""
 
     properties.forEach {
@@ -86,7 +86,7 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
                 append(nextSeparator)
                 nextSeparator = ", "
                 append(property)
-                append("=")
+                append('=')
                 if (value is Array<*>) {
                     val arrayString = arrayOf(value).contentDeepToString()
                     append(arrayString, 1, arrayString.length - 1)
@@ -105,5 +105,5 @@ inline fun <reified T : Any> T.kotlinToString(properties: Array<out KProperty1<T
         }
     }
 
-    return builder.append(")").toString()
+    return builder.append(')').toString()
 }
